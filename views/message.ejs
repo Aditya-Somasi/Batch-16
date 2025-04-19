@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot</title>
+   
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="flex items-center justify-center h-screen bg-gray-100">
+
+    <!-- Chatbot Dialog Box -->
+    <div class="w-96 bg-white shadow-lg rounded-lg p-4 border border-gray-200">
+        <h2 class="text-lg font-semibold text-gray-700 mb-3">Chatbot</h2>
+
+        <!-- Chat Display Box -->
+        <div class="h-48 overflow-y-auto border border-gray-300 rounded p-2 mb-3 bg-gray-50">
+            <% if (botResponse) { %>
+                <p class="text-gray-700"><strong>Bot:</strong> <%= botResponse %></p>
+            <% } else { %>
+                <p class="text-gray-400 italic">Bot is waiting for your message...</p>
+            <% } %>
+        </div>
+
+        <!-- Chat Input Form -->
+        <form action="/message" method="POST" class="flex gap-2">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+            <input type="text" name="message" placeholder="Type your message..." required
+                class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400">
+            <button type="submit"
+                class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition">
+                Send
+            </button>
+        </form>
+    </div>
+
+</body>
+</html>

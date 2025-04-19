@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TrendLens</title>
+    <meta name="csrf-token" content="<%= csrfToken %>">
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+      .card { background: rgba(25, 25, 25, 0.9); box-shadow: 0 4px 10px rgba(0, 255, 255, 0.3); border-radius: 10px; padding: 20px; }
+      .section-title { border-bottom: 2px solid cyan; padding-bottom: 5px; margin-bottom: 15px; }
+      .trend-item { cursor: pointer; transition: 0.3s; }
+      .trend-item:hover { color: cyan; }
+  </style>
+   <style>
+    /* Custom CSS for better readability and minor adjustments */
+    body {
+        font-family: 'Roboto', sans-serif;
+        background: linear-gradient(to bottom right, #111827, #374151);
+        color: #fff;
+        overflow-x: hidden;
+    }
+
+    .sentiment-card {
+        border-radius: 0.75rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+        overflow: hidden;
+    }
+
+    .sentiment-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 8px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .sentiment-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(45deg, rgba(255, 255, 255, 0.1), transparent);
+        z-index: 0;
+        pointer-events: none;
+    }
+
+    .positive {
+        border-left: 6px solid #66BB6A;
+    }
+
+    .negative {
+        border-left: 6px solid #EF5350;
+    }
+
+    .neutral {
+        border-left: 6px solid #FFEE58;
+    }
+
+    .positive-section {
+        background: linear-gradient(to right, rgba(102, 187, 106, 0.1), transparent);
+    }
+
+    .negative-section {
+        background: linear-gradient(to right, rgba(239, 83, 80, 0.1), transparent);
+    }
+
+    .neutral-section {
+        background: linear-gradient(to right, rgba(255, 238, 88, 0.1), transparent);
+    }
+
+    @keyframes typing {
+        from { width: 0; }
+        to { width: 100%; }
+    }
+    
+    @keyframes blink {
+        50% { opacity: 0; }
+    }
+    
+    #logo-text {
+        display: inline-block;
+        font-family: 'YourFont', sans-serif;
+        white-space: nowrap;
+        overflow: hidden;
+        border-right: 3px solid cyan;
+        animation: typing 2s steps(10, end) forwards, blink 0.8s step-end infinite alternate;
+        text-shadow: 0 0 8px cyan;
+    }
+
+    /* Style the loading GIF */
+    #loading-gif {
+        width: 100px;
+        height: 100px;
+        margin: 0 auto 1rem;
+        display: block;
+    }
+
+    #loading-message {
+        font-size: 1rem;  /* Large font size */
+        font-weight: bold;
+        text-align: center;
+    }
+
+    .message-color-1 { color: #FFB74D; } /* Light Blue */
+    .message-color-2 { color: #FFB74D; } /* Light Green */
+    .message-color-3 { color: #FFB74D; } /* Light Orange */
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js">
+
+document.addEventListener("DOMContentLoaded", function() {
+        const text = "TRENDLENS";
+        let index = 0;
+        function typeEffect() {
+            if (index < text.length) {
+                document.getElementById("logo-text").innerText += text[index];
+                index++;
+                setTimeout(typeEffect, 150);
+            } else {
+                document.getElementById("logo-text").style.borderRight = "none";
+            }
+        }
+        typeEffect();
+    });
+</script>
+</head>
+<body class="bg-gray-900" >
+ <!-- Navbar -->
+ <nav class="bg-gray-800 p-4 shadow-lg mb-8">
+    <div class="max-w-screen-xl mx-auto flex justify-between items-center">
+        <!-- Logo with Typing Effect -->
+        <div class="flex items-center space-x-3">
+            <img src="<%= '/images/logo.png' %>" alt="Logo" class="h-24 w-24">
+
+            <!-- <h1 class="text-cyan-400 text-2xl font-semibold tracking-wider">TrendLens</h1> -->
+            <span id="logo-text" class="text-cyan-400 text-2xl font-semibold tracking-wider"></span>
+        </div>
+        
+        <!-- Navigation Links -->
+        <div class="flex space-x-4">  
+            <a href="/about" class="text-white text-sm bg-gray-700 px-4 py-2 rounded transition duration-300 ease-in-out hover:bg-cyan-500">About</a>
+            <a href="/" class="text-white text-sm bg-gray-700 px-4 py-2 rounded transition duration-300 ease-in-out hover:bg-cyan-500">AI Analyzer</a>
+            <a href="/graphs" class="text-white text-sm bg-gray-700 px-4 py-2 rounded transition duration-300 ease-in-out hover:bg-cyan-500">AI Visualizer</a>
+            <a href="/aiapp" class="text-white text-sm bg-gray-700 px-4 py-2 rounded transition duration-300 ease-in-out hover:bg-cyan-500">AI Post Generator</a>
+            
+            <a href="/profile" class="text-white text-sm bg-gray-700 px-4 py-2 rounded transition duration-300 ease-in-out hover:bg-cyan-500">Profile</a>
+           
+            
+            <a href="/logout" class="text-white text-sm bg-red-600 px-4 py-2 rounded transition duration-300 ease-in-out hover:bg-red-700">Logout</a>
+        </div>
+    </div>
+</nav>
+
+<main class="bg-gradient-to-br from-gray-900 to-gray-800 text-white p-8">
+    <div class="container mx-auto p-8 shadow-xl rounded-lg bg-gray-900 relative overflow-hidden">
+        <h1 class="text-4xl font-extrabold text-center text-blue-400 mb-8">🚀 Sentiment Analysis</h1>
+
+        <div id="loading-container" class="text-center">
+            <img id="loading-gif" src="https://i.ibb.co/Rkz3vxKx/10-11-02-622-512.gif" alt="Loading..." />
+            <div id="loading-message"></div>
+        </div>
+
+        <div id="sentiment-sections" class="space-y-8 hidden"></div>
+    </div>
+
+    <script id="sentimentData" type="application/json">
+        <%- JSON.stringify(content) %>
+    </script>
+
+    <script>document.addEventListener("DOMContentLoaded", function() {
+        const sentimentSections = document.getElementById('sentiment-sections');
+        const loadingContainer = document.getElementById('loading-container');
+        const loadingMessage = document.getElementById('loading-message');
+        const messages = ["Analyzing social media...", "Reviewing latest trends...", "Processing the data..."];
+        let messageIndex = 0;
+    
+        function displayLoadingMessage() {
+            loadingMessage.textContent = messages[messageIndex];
+            messageIndex = (messageIndex + 1) % messages.length;
+        }
+    
+        function createSentimentSection(sentimentType, sentiments) {
+            const section = document.createElement('div');
+            const sectionClasses = {
+                "positive": "text-green-400 bg-gray-800",
+                "negative": "text-red-400 bg-gray-800",
+                "neutral": "text-yellow-400 bg-gray-800"
+            };
+    
+            section.className = `mb-8 rounded-lg p-6 ${sectionClasses[sentimentType]}`;
+    
+            const sectionTitle = document.createElement('h2');
+            sectionTitle.className = "text-3xl font-semibold mb-4";
+            sectionTitle.textContent = sentimentType.charAt(0).toUpperCase() + sentimentType.slice(1);
+            section.appendChild(sectionTitle);
+    
+            const cardContainer = document.createElement('div');
+            cardContainer.className = "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6";
+    
+            sentiments.forEach(sentiment => {
+                const card = document.createElement('div');
+                card.className = "p-5 bg-gray-900 rounded-lg shadow-md";
+    
+                const title = document.createElement('h3');
+                title.className = "text-xl font-semibold mb-2 text-white";
+                title.textContent = sentiment.title || "Untitled";
+                card.appendChild(title);
+    
+                const description = document.createElement('p');
+                description.className = "text-gray-400 mb-2";
+                description.textContent = sentiment.long_description || sentiment.description || "No description available.";
+                card.appendChild(description);
+    
+                const score = document.createElement('p');
+                score.className = "text-sm text-gray-500";
+                score.textContent = `Sentiment Score: ${sentiment.sentiment_score || "N/A"}`;
+                card.appendChild(score);
+    
+                cardContainer.appendChild(card);
+            });
+    
+            section.appendChild(cardContainer);
+            return section;
+        }
+    
+        function loadData() {
+            try {
+                const sentimentDataElement = document.getElementById("sentimentData");
+                if (!sentimentDataElement) {
+                    console.error("Error: #sentimentData element not found.");
+                    return;
+                }
+    
+                const jsonData = JSON.parse(sentimentDataElement.textContent);
+    
+                for (const sentimentType in jsonData.sentiments) {
+                    if (jsonData.sentiments.hasOwnProperty(sentimentType)) {
+                        const section = createSentimentSection(sentimentType, jsonData.sentiments[sentimentType]);
+                        sentimentSections.appendChild(section);
+                    }
+                }
+            } catch (error) {
+                console.error("Error parsing JSON data:", error);
+            }
+        }
+    
+        sentimentSections.classList.add('hidden');
+        const loadingInterval = setInterval(displayLoadingMessage, 2000);
+    
+        setTimeout(() => {
+            clearInterval(loadingInterval);
+            loadingContainer.style.display = 'none';
+            sentimentSections.classList.remove('hidden');
+            loadData();
+        }, 6000);
+    });
+    </script>
+</main>
+<%- include('snippets/footer') %>

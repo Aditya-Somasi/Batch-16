@@ -1,0 +1,32 @@
+ <!-- Loading Header modules from snippets -->
+ <%- include('snippets/header') %>
+ 
+<main class="max-w-screen-xl px-16 mx-auto">
+  <div class="max-w-lg mx-auto bg-gray-900 p-8 shadow-lg rounded-lg">
+    <h1 class="text-2xl font-semibold text-cyan-500 text-center mb-6">AI Post Generator</h1>
+    <form action="/aiapp" method="POST" class="space-y-4">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        
+        <textarea name="prompt" rows="4" class="w-full p-3 bg-gray-800 text-white rounded-lg border border-gray-600 focus:ring-2 focus:ring-cyan-500 focus:outline-none resize-none" placeholder="Enter your topic..."></textarea>
+        
+        <button type="submit" class="w-full py-3 bg-cyan-500 text-gray-900 font-semibold rounded-lg shadow-md hover:bg-cyan-400 transition">
+            🚀 Generate Social Post Content
+        </button>
+    </form>
+</div>
+  <div>
+    <% if (content && content !== "") { %>
+      <div class="bg-white p-6 my-4 shadow-md rounded-md">
+        <h3 class="pb-3 font-semibold text-lg">Result</h3>
+        <div class="text-black">
+          <%- content %> <!-- This allows rendering HTML inside 'content' -->
+        </div>
+      </div>
+      <div class="p-10"></div> 
+    <% } %>
+  </div>
+</main>
+      
+ <!-- Loading Footer modules from snippets -->
+ <%- include('snippets/footer') %>
+   

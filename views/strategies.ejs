@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TrendLens</title>
+    <meta name="csrf-token" content="<%= csrfToken %>">
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+      .card { background: rgba(25, 25, 25, 0.9); box-shadow: 0 4px 10px rgba(0, 255, 255, 0.3); border-radius: 10px; padding: 20px; }
+      .section-title { border-bottom: 2px solid cyan; padding-bottom: 5px; margin-bottom: 15px; }
+      .trend-item { cursor: pointer; transition: 0.3s; }
+      .trend-item:hover { color: cyan; }
+  </style>
+   <style>
+    /* Custom CSS for better readability and minor adjustments */
+    body {
+        font-family: 'Roboto', sans-serif;
+        background: linear-gradient(to bottom right, #111827, #374151);
+        color: #fff;
+        overflow-x: hidden;
+    }
+
+    .sentiment-card {
+        border-radius: 0.75rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+        overflow: hidden;
+    }
+
+    .sentiment-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 8px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .sentiment-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(45deg, rgba(255, 255, 255, 0.1), transparent);
+        z-index: 0;
+        pointer-events: none;
+    }
+
+    .positive {
+        border-left: 6px solid #66BB6A;
+    }
+
+    .negative {
+        border-left: 6px solid #EF5350;
+    }
+
+    .neutral {
+        border-left: 6px solid #FFEE58;
+    }
+
+    .positive-section {
+        background: linear-gradient(to right, rgba(102, 187, 106, 0.1), transparent);
+    }
+
+    .negative-section {
+        background: linear-gradient(to right, rgba(239, 83, 80, 0.1), transparent);
+    }
+
+    .neutral-section {
+        background: linear-gradient(to right, rgba(255, 238, 88, 0.1), transparent);
+    }
+
+    @keyframes typing {
+        from { width: 0; }
+        to { width: 100%; }
+    }
+    
+    @keyframes blink {
+        50% { opacity: 0; }
+    }
+    
+    #logo-text {
+        display: inline-block;
+        font-family: 'YourFont', sans-serif;
+        white-space: nowrap;
+        overflow: hidden;
+        border-right: 3px solid cyan;
+        animation: typing 2s steps(10, end) forwards, blink 0.8s step-end infinite alternate;
+        text-shadow: 0 0 8px cyan;
+    }
+
+    /* Style the loading GIF */
+    #loading-gif {
+        width: 100px;
+        height: 100px;
+        margin: 0 auto 1rem;
+        display: block;
+    }
+
+    #loading-message {
+        font-size: 1rem;  /* Large font size */
+        font-weight: bold;
+        text-align: center;
+    }
+
+    .message-color-1 { color: #FFB74D; } /* Light Blue */
+    .message-color-2 { color: #FFB74D; } /* Light Green */
+    .message-color-3 { color: #FFB74D; } /* Light Orange */
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js">
+
+document.addEventListener("DOMContentLoaded", function() {
+        const text = "TRENDLENS";
+        let index = 0;
+        function typeEffect() {
+            if (index < text.length) {
+                document.getElementById("logo-text").innerText += text[index];
+                index++;
+                setTimeout(typeEffect, 150);
+            } else {
+                document.getElementById("logo-text").style.borderRight = "none";
+            }
+        }
+        typeEffect();
+    });
+</script>
+</head>
+<body class="bg-gray-900" >
+ <!-- Navbar -->
+ <nav class="bg-gray-800 p-4 shadow-lg mb-8">
+    <div class="max-w-screen-xl mx-auto flex justify-between items-center">
+        <!-- Logo with Typing Effect -->
+        <div class="flex items-center space-x-3">
+            <img src="<%= '/images/logo.png' %>" alt="Logo" class="h-24 w-24">
+
+            <!-- <h1 class="text-cyan-400 text-2xl font-semibold tracking-wider">TrendLens</h1> -->
+            <span id="logo-text" class="text-cyan-400 text-2xl font-semibold tracking-wider"></span>
+        </div>
+        
+        <!-- Navigation Links -->
+        <div class="flex space-x-4">  
+            <a href="/about" class="text-white text-sm bg-gray-700 px-4 py-2 rounded transition duration-300 ease-in-out hover:bg-cyan-500">About</a>
+            <a href="/" class="text-white text-sm bg-gray-700 px-4 py-2 rounded transition duration-300 ease-in-out hover:bg-cyan-500">AI Analyzer</a>
+            <a href="/graphs" class="text-white text-sm bg-gray-700 px-4 py-2 rounded transition duration-300 ease-in-out hover:bg-cyan-500">AI Visualizer</a>
+            <a href="/aiapp" class="text-white text-sm bg-gray-700 px-4 py-2 rounded transition duration-300 ease-in-out hover:bg-cyan-500">AI Post Generator</a>
+            
+            <a href="/profile" class="text-white text-sm bg-gray-700 px-4 py-2 rounded transition duration-300 ease-in-out hover:bg-cyan-500">Profile</a>
+           
+            
+            <a href="/logout" class="text-white text-sm bg-red-600 px-4 py-2 rounded transition duration-300 ease-in-out hover:bg-red-700">Logout</a>
+        </div>
+    </div>
+</nav>
+<main class="bg-gradient-to-br from-gray-900 to-gray-800 text-white p-8">
+    <div class="max-w-6xl mx-auto p-8 shadow-xl rounded-lg bg-gray-900">
+        <h1 class="text-4xl font-extrabold text-center text-blue-400 mb-8">🚀Content Strategies</h1>
+        
+        <div id="content-sections" class="space-y-12 "></div>
+    </div>
+
+    <!-- Embed JSON data in script tag -->
+    <script id="contentData" type="application/json">
+        <%- JSON.stringify(content) %>
+    </script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const contentSections = document.getElementById('content-sections');
+
+            function createSection(title, items, layout = "grid") {
+                const section = document.createElement('div');
+
+                const sectionTitle = document.createElement('h2');
+                sectionTitle.textContent = title;
+                sectionTitle.className = "text-2xl font-bold text-blue-300 mb-4";
+                section.appendChild(sectionTitle);
+
+                const container = document.createElement('div');
+                container.className = layout === "grid" ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" : "flex flex-wrap gap-4";
+
+                items.forEach(item => {
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = "p-4 bg-gray-800 rounded-lg shadow-lg transition hover:bg-gray-700";
+
+                    const itemTitle = document.createElement('h3');
+                    itemTitle.className = "text-xl font-semibold text-blue-300";
+                    itemTitle.textContent = item.title || "Untitled";
+
+                    const itemDescription = document.createElement('p');
+                    itemDescription.className = "text-lg text-gray-400 mt-2";
+                    itemDescription.textContent = item.long_description || ".....";
+
+                    const itemExample = document.createElement('p');
+                    itemExample.className = "text-md text-white-500 mt-2 italic";
+                    itemExample.textContent = `Example: ${item.example || "No example provided."}`;
+
+                    itemDiv.appendChild(itemTitle);
+                    itemDiv.appendChild(itemDescription);
+                    itemDiv.appendChild(itemExample);
+                    container.appendChild(itemDiv);
+                });
+
+                section.appendChild(container);
+                return section;
+            }
+
+            try {
+                // Get JSON data from script tag
+                const jsonData = JSON.parse(document.getElementById("contentData").textContent.trim());
+
+                if (jsonData.engagement) {
+                    contentSections.appendChild(createSection("📈 Engagement Boosters", jsonData.engagement));
+                }
+                if (jsonData.viral_content) {
+                    contentSections.appendChild(createSection("🔥 Viral Content Strategies", jsonData.viral_content, "flex"));
+                }
+            } catch (error) {
+                console.error("Error parsing JSON data:", error);
+                const errorDiv = document.createElement('div');
+                errorDiv.classList.add('text-red-500', 'text-center');
+                errorDiv.textContent = "Error loading content. Please try again later.";
+                contentSections.appendChild(errorDiv);
+            }
+        });
+    </script>
+</main>
+<%- include('snippets/footer') %>

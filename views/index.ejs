@@ -1,0 +1,252 @@
+<!-- Loading Header modules from snippets -->
+<%- include('snippets/header') %>
+
+<main class="flex flex-col items-center justify-center min-h-screen p-6">
+    <!-- <h1 class="text-4xl font-bold text-cyan-400 mb-8">Decoding Trends in Real Time...</h1> -->
+    <h1 id="typing-text" class="text-4xl font-bold text-cyan-400 mb-8 "></h1>
+
+<style>
+  @keyframes glow {
+    0% { text-shadow: 0 0 5px cyan, 0 0 10px cyan; }
+    50% { text-shadow: 0 0 15px cyan, 0 0 30px cyan; }
+    100% { text-shadow: 0 0 5px cyan, 0 0 10px cyan; }
+  }
+
+  .glow {
+    animation: glow 1s infinite alternate;
+  }
+
+  .cursor::after {
+    content: "/";
+    display: inline-block;
+    animation: blink 0.7s infinite;
+  }
+
+  @keyframes blink {
+    50% { opacity: 0; }
+  }
+</style>
+
+<script>
+  const textElement = document.getElementById("typing-text");
+  const text = "Decoding Trends in Real Time...";
+  let index = 0;
+  let deleting = false;
+
+  function typeEffect() {
+    if (!deleting && index < text.length) {
+      textElement.innerHTML = text.substring(0, index + 1) + '<span class="cursor"></span>';
+      index++;
+      setTimeout(typeEffect, 100); // Typing speed
+    } else if (deleting && index > 0) {
+      textElement.innerHTML = text.substring(0, index - 1) + '<span class="cursor"></span>';
+      index--;
+      setTimeout(typeEffect, 50); // Deleting speed
+    } else {
+      deleting = !deleting;
+      setTimeout(typeEffect, 1500); // Delay before retyping
+    }
+  }
+
+  window.onload = () => {
+    textElement.innerHTML = '<span class="cursor"></span>'; // Initial cursor
+    typeEffect();
+  };
+</script>
+
+    
+    <form action="/analyze" method="POST" class="w-full max-w-screen-xl">
+        <input id="searchBox" name="query" type="text" placeholder="Search for a topic..." 
+            class="w-full p-4 text-black rounded-lg shadow-lg"/>
+    
+            <div class="mt-4 flex justify-center space-x-4">
+                <label class="option-card border-2 border-cyan-400 text-cyan-300"  data-description="Analyze social media trends">
+                    <input type="radio" name="analysisType" value="Trends" class="hidden">
+                    <span>Trends</span>
+                </label>
+                
+                
+                <label class="option-card border-2 border-green-400 text-green-300"  data-description="Understand audience sentiment">
+                    <input type="radio" name="analysisType" value="Sentiment" class="hidden">
+                    <span>Sentiment</span>
+                </label>
+            
+                <label class="option-card border-2 border-yellow-400 text-yellow-300"  data-description="Discover strategic insights">
+                    <input type="radio" name="analysisType" value="Strategies" class="hidden">
+                    <span>Strategies</span>
+                </label>
+            </div>
+            
+            <style>
+                .option-card {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    width: 180px;
+                    height: 90px;
+                    border-radius: 15px;
+                    font-weight: bold;
+                    cursor: pointer;
+                    transition: transform 0.5s ease-in-out, box-shadow 0.5s ease-in-out, background-color 0.5s ease-in-out;
+                    box-shadow: 0 6px 12px rgba(0, 255, 255, 0.4);
+                    position: relative;
+                    background: linear-gradient(135deg, rgba(0, 255, 255, 0.2), rgba(255, 255, 255, 0.1));
+                    text-align: center;
+                    color: white;
+                    overflow: hidden;
+                }
+            
+                .option-card:hover {
+                    transform: rotateY(15deg) scale(1.15);
+                    box-shadow: 0 8px 16px rgba(0, 255, 255, 0.6);
+                    background: linear-gradient(135deg, rgba(0, 255, 255, 0.4), rgba(255, 255, 255, 0.2));
+                }
+            
+                .option-card::before {
+                    content: attr(data-emoji);
+                    position: absolute;
+                    top: 10px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    font-size: 2rem;
+                    opacity: 0.8;
+                }
+            
+                .option-card:hover::after {
+                    content: attr(data-description);
+                    position: absolute;
+                    bottom: 100%;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    background: rgba(0, 0, 0, 0.8);
+                    color: white;
+                    font-size: 14px;
+                    padding: 6px 12px;
+                    border-radius: 8px;
+                    white-space: nowrap;
+                    opacity: 1;
+                    visibility: visible;
+                    transition: opacity 0.3s ease-in-out, bottom 0.3s ease-in-out;
+}
+            
+                @keyframes fadeIn {
+                    from { opacity: 0; transform: translateX(-50%) translateY(5px); }
+                    to { opacity: 1; transform: translateX(-50%) translateY(0); }
+                }
+            
+                .option-card input:checked + span {
+                    color: white;
+                    background: linear-gradient(135deg, rgba(0, 255, 255, 0.5), rgba(255, 255, 255, 0.3));
+                    padding: 12px;
+                    border-radius: 12px;
+                    transform: rotateY(360deg) scale(1.2);
+                    transition: transform 0.8s ease-in-out, background-color 0.8s ease-in-out;
+                }
+            </style>
+            
+            <style>
+                @keyframes pulse {
+                    0% { transform: scale(1); }
+                    50% { transform: scale(1.2); }
+                    100% { transform: scale(1); }
+                }
+            </style>
+            <script>
+                document.addEventListener("DOMContentLoaded", function() {
+                    const cards = document.querySelectorAll(".option-card");
+            
+                    cards.forEach(card => {
+                        card.addEventListener("click", function() {
+                            cards.forEach(c => c.classList.remove("selected"));
+                            this.classList.add("selected");
+                            this.style.animation = "pulse 0.6s ease-in-out";
+                            setTimeout(() => { this.style.animation = ""; }, 600);
+                        });
+                    });
+                });
+            </script>
+            
+
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    
+        <button type="submit" class="mt-4 w-full bg-cyan-500 text-black p-3 rounded-lg font-bold hover:bg-cyan-400 transition">
+            Analyze
+        </button>
+    </form>
+    
+    <div class="card mt-6 w-full max-w-screen-xl text-center p-6">
+        <h2 class="text-2xl text-cyan-300 section-title">Suggestive Topics</h2>
+        <p class="text-gray-400 mb-4">Choosing the right topic is key to unlocking valuable insights. Our AI-driven suggestive topics help you stay ahead of trends, analyze sentiments, and craft effective strategies. Click below to explore!</p>
+        
+        <button id="toggleTopics" class="bg-cyan-500 text-black px-6 py-3 rounded-lg font-bold shadow-lg hover:bg-cyan-400 transition-transform transform hover:scale-105">
+            Show Suggestive Topics
+        </button>
+        
+        <div id="trendingList" class="grid grid-cols-2 md:grid-cols-3 gap-4 text-gray-300 mt-4 hidden p-4 border-t border-cyan-400"></div>
+    </div>
+    
+    <script>
+        document.getElementById('toggleTopics').addEventListener('click', function() {
+            const trendingList = document.getElementById('trendingList');
+            if (trendingList.classList.contains('hidden')) {
+                trendingList.classList.remove('hidden');
+                this.textContent = 'Hide Suggestive Topics';
+            } else {
+                trendingList.classList.add('hidden');
+                this.textContent = 'Show Suggestive Topics';
+            }
+        });
+    
+        fetch('json/topics.json')
+            .then(response => response.json())
+            .then(data => {
+                const trendingList = document.getElementById('trendingList');
+                data.trending_topics.forEach(topic => {
+                    const span = document.createElement('span');
+                    span.textContent = topic;
+                    span.className = 'trend-item cursor-pointer px-4 py-2 bg-gray-800 rounded-lg shadow-md hover:bg-cyan-600 transition';
+                    span.addEventListener('click', () => {
+                        document.getElementById('searchBox').value = topic;
+                    });
+                    trendingList.appendChild(span);
+                });
+            })
+            .catch(error => console.error('Error loading trending topics:', error));
+    </script>
+    
+    <a href="/message" class="fixed bottom-6 right-6 bg-cyan-500 p-4 rounded-full shadow-lg hover:bg-cyan-400 transition">
+        <svg class="w-8 h-8 text-black" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M2 21l1.5-4.5L10 10l5 5-6.5 6.5L2 21zm14-12c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2zm6-6c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2z"/>
+        </svg>
+    </a>
+    
+    <!-- <script>
+        fetch('json/topics.json')
+            .then(response => response.json())
+            .then(data => {
+                const trendingList = document.getElementById('trendingList');
+                data.trending_topics.forEach(topic => {
+                    const span = document.createElement('span');
+                    span.textContent = topic;
+                    span.className = 'trend-item cursor:pointer';
+                    span.addEventListener('click', () => {
+                        document.getElementById('searchBox').value = topic;
+                    });
+                    trendingList.appendChild(span);
+                });
+            })
+            .catch(error => console.error('Error loading trending topics:', error));
+        
+        document.getElementById('analyzeButton').addEventListener('click', () => {
+            const query = document.getElementById('searchBox').value;
+            const selectedType = document.querySelector('input[name="analysisType"]:checked').value;
+            if (query) {
+                alert(`Analyzing: ${query} (${selectedType})`);
+            } else {
+                alert('Please enter a keyword to analyze.');
+            }
+        });
+    </script> -->
+   
+</main>
+<%- include('snippets/footer') %>

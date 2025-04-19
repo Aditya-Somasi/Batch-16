@@ -1,0 +1,58 @@
+
+ <%- include('snippets/header') %>
+<main class="flex flex-col items-center justify-center min-h-screen p-6">
+    <h1 class="text-4xl font-bold text-cyan-400 mb-8">TrendLens Analyzer</h1>
+    
+    <div class="w-full max-w-screen-xl">
+        <input id="searchBox" type="text" placeholder="Search latest trends..." 
+            class="w-full p-4 text-black rounded-lg shadow-lg"/>
+        
+        <div class="mt-4 flex justify-center space-x-4">
+            <label class="flex items-center space-x-2 text-cyan-300">
+                <input type="radio" name="analysisType" value="Trends" checked class="form-radio text-cyan-400"> Trends
+            </label>
+            <label class="flex items-center space-x-2 text-green-300">
+                <input type="radio" name="analysisType" value="Sentiment" class="form-radio text-green-400"> Sentiment
+            </label>
+            <label class="flex items-center space-x-2 text-yellow-300">
+                <input type="radio" name="analysisType" value="Strategies" class="form-radio text-yellow-400"> Strategies
+            </label>
+        </div>
+        
+        <button id="analyzeButton" class="mt-4 w-full bg-cyan-500 text-black p-3 rounded-lg font-bold hover:bg-cyan-400 transition">Analyze</button>
+    </div>
+    
+    <div class="card mt-6 w-full max-w-screen-xl">
+        <h2 class="text-2xl text-cyan-300 section-title">Trending Now</h2>
+        <div id="trendingList" class="grid grid-cols-2 md:grid-cols-3 gap-4 text-gray-300"></div>
+    </div>
+    
+    <script>
+        fetch('json/topics.json')
+            .then(response => response.json())
+            .then(data => {
+                const trendingList = document.getElementById('trendingList');
+                data.trending_topics.forEach(topic => {
+                    const span = document.createElement('span');
+                    span.textContent = topic;
+                    span.className = 'trend -item';
+                    span.addEventListener('click', () => {
+                        document.getElementById('searchBox').value = topic;
+                    });
+                    trendingList.appendChild(span);
+                });
+            })
+            .catch(error => console.error('Error loading trending topics:', error));
+        
+        document.getElementById('analyzeButton').addEventListener('click', () => {
+            const query = document.getElementById('searchBox').value;
+            const selectedType = document.querySelector('input[name="analysisType"]:checked').value;
+            if (query) {
+                alert(`Analyzing: ${query} (${selectedType})`);
+            } else {
+                alert('Please enter a keyword to analyze.');
+            }
+        });
+    </script>
+</main>
+<%- include('snippets/footer') %>

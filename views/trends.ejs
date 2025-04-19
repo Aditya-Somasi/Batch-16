@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TrendLens</title>
+    <meta name="csrf-token" content="<%= csrfToken %>">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <style>
+      .card { background: rgba(25, 25, 25, 0.9); box-shadow: 0 4px 10px rgba(0, 255, 255, 0.3); border-radius: 10px; padding: 20px; }
+      .section-title { border-bottom: 2px solid cyan; padding-bottom: 5px; margin-bottom: 15px; }
+      .trend-item { cursor: pointer; transition: 0.3s; }
+      .trend-item:hover { color: cyan; }
+  </style>
+   <style>
+    /* Custom CSS for better readability and minor adjustments */
+    body {
+        font-family: 'Roboto', sans-serif;
+        background: linear-gradient(to bottom right, #111827, #374151);
+        color: #fff;
+        overflow-x: hidden;
+    }
+
+    .sentiment-card {
+        border-radius: 0.75rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+        overflow: hidden;
+    }
+
+    .sentiment-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 8px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .sentiment-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(45deg, rgba(255, 255, 255, 0.1), transparent);
+        z-index: 0;
+        pointer-events: none;
+    }
+
+    .positive {
+        border-left: 6px solid #66BB6A;
+    }
+
+    .negative {
+        border-left: 6px solid #EF5350;
+    }
+
+    .neutral {
+        border-left: 6px solid #FFEE58;
+    }
+
+    .positive-section {
+        background: linear-gradient(to right, rgba(102, 187, 106, 0.1), transparent);
+    }
+
+    .negative-section {
+        background: linear-gradient(to right, rgba(239, 83, 80, 0.1), transparent);
+    }
+
+    .neutral-section {
+        background: linear-gradient(to right, rgba(255, 238, 88, 0.1), transparent);
+    }
+
+    /* Style the loading GIF */
+    #loading-gif {
+        width: 100px;
+        height: 100px;
+        margin: 0 auto 1rem;
+        display: block;
+    }
+
+    #loading-message {
+        font-size: 1rem;  /* Large font size */
+        font-weight: bold;
+        text-align: center;
+    }
+
+    .message-color-1 { color: #FFB74D; } /* Light Blue */
+    .message-color-2 { color: #FFB74D; } /* Light Green */
+    .message-color-3 { color: #FFB74D; } /* Light Orange */
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-900" >
+ <!-- Navbar -->
+ <nav class="bg-gray-800 p-4 shadow-lg mb-8">
+    <div class="max-w-screen-xl mx-auto flex justify-between items-center">
+        <!-- Logo with Typing Effect -->
+        <div class="flex items-center space-x-3">
+            <h1 class="text-cyan-400 text-2xl font-semibold tracking-wider">TrendLens</h1>
+            <span id="logo-text" class="text-cyan-400 text-2xl font-semibold tracking-wider"></span>
+        </div>
+        
+        <!-- Navigation Links -->
+        <div class="flex space-x-4">  
+            <a href="/" class="text-white text-sm bg-gray-700 px-4 py-2 rounded transition duration-300 ease-in-out hover:bg-cyan-500">AI Analyzer</a>
+            <a href="/graphs" class="text-white text-sm bg-gray-700 px-4 py-2 rounded transition duration-300 ease-in-out hover:bg-cyan-500">AI Visualizer</a>
+            <a href="/aiapp" class="text-white text-sm bg-gray-700 px-4 py-2 rounded transition duration-300 ease-in-out hover:bg-cyan-500">AI Post Generator</a>
+            <a href="/profile" class="text-white text-sm bg-gray-700 px-4 py-2 rounded transition duration-300 ease-in-out hover:bg-cyan-500">Profile</a>
+            <a href="/logout" class="text-white text-sm bg-red-600 px-4 py-2 rounded transition duration-300 ease-in-out hover:bg-red-700">Logout</a>
+        </div>
+    </div>
+</nav>
+<main class="bg-gradient-to-br from-gray-900 to-gray-800 text-white p-8">
+    <div class="max-w-6xl mx-auto p-8 shadow-xl rounded-lg bg-gray-900">
+        <h1 class="text-4xl font-extrabold text-center text-blue-400 mb-8">🚀 Trend Analysis</h1>
+
+        <div id="content" class="space-y-12"></div>
+
+        <!-- Chart Section Below Trending Topics -->
+        <div class="mt-10">
+            <h2 class="text-3xl font-semibold text-purple-400 mb-4">📊 Popularity Graph</h2>
+            
+            <!-- Dropdown for Chart Type Selection -->
+            <label for="chartType" class="text-lg font-semibold text-white">Select Chart Type:</label>
+            <select id="chartType" class="ml-2 px-4 py-2 bg-gray-800 text-white border border-gray-600 rounded">
+                <option value="line">📈 Line Chart</option>
+                <option value="bar">📊 Bar Chart</option>
+                <option value="pie">🥧 Pie Chart</option>
+                <option value="bubble">🔵 Bubble Chart</option>
+            </select>
+
+            <!-- Chart Canvas -->
+            <div class="mt-6">
+                <canvas id="popularityChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Download PDF Button -->
+<div class="text-center mt-8">
+    <button id="downloadPdf" class="px-6 py-3 bg-blue-500 text-white rounded-lg shadow-lg hover:bg-blue-600 transition">
+        📄 Download Trend_Analysis_Report
+    </button>
+</div>
+
+<script>
+    document.getElementById("downloadPdf").addEventListener("click", function() {
+        const { jsPDF } = window.jspdf;
+        let doc = new jsPDF("p", "mm", "a4");
+        
+        html2canvas(document.querySelector("#content"), { scale: 2 }).then(canvas => {
+            let imgData = canvas.toDataURL("image/png");
+            let imgWidth = 190;
+            let imgHeight = (canvas.height * imgWidth) / canvas.width;
+            doc.addImage(imgData, "PNG", 10, 10, imgWidth, imgHeight);
+            doc.save("Trend_Analysis_Report.pdf");
+        });
+    });
+</script>
+
+    <!-- Embed JSON data -->
+    <script id="trendData" type="application/json">
+        <%- JSON.stringify(content) %>
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        const rawData = document.getElementById("trendData").textContent;
+        const jsonData = JSON.parse(rawData);
+
+        function createTrendingTopicsSection() {
+            const section = document.createElement('div');
+            section.innerHTML = `<h2 class='text-3xl font-semibold text-blue-300 mb-4'>🔥 Trending Topics</h2>`;
+
+            const grid = document.createElement('div');
+            grid.className = "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6";
+
+            jsonData.trending_topics.forEach(item => {
+                grid.innerHTML += `
+                    <div class='p-5 bg-gray-800 rounded-lg shadow-lg hover:bg-gray-700 transition'>
+                        <h3 class='text-xl font-semibold'>${item.topic}</h3>
+                        <p class='text-blue-400 text-lg font-bold mt-2'>Popularity: ${item.popularity_index}</p>
+                    </div>
+                `;
+            });
+
+            section.appendChild(grid);
+            return section;
+        }
+
+        function createSearchKeywordsSection() {
+            const section = document.createElement('div');
+            section.innerHTML = `<h2 class='text-3xl font-semibold text-green-300 mb-4'>🔍 Search Keywords</h2>`;
+
+            const flexContainer = document.createElement('div');
+            flexContainer.className = "flex flex-wrap gap-3";
+
+            jsonData.search_keywords.forEach(item => {
+                flexContainer.innerHTML += `
+                    <span class='px-4 py-2 bg-green-700 rounded-full text-lg font-medium shadow-md'>
+                        ${item.keyword} <span class='text-green-300 font-bold'>(${item.popularity_index})</span>
+                    </span>
+                `;
+            });
+
+            section.appendChild(flexContainer);
+            return section;
+        }
+
+        function createHashtagsSection() {
+            const section = document.createElement('div');
+            section.innerHTML = `<h2 class='text-3xl font-semibold text-yellow-300 mb-4'>#️⃣ Popular Hashtags</h2>`;
+
+            const flexContainer = document.createElement('div');
+            flexContainer.className = "flex flex-wrap gap-4";
+
+            jsonData.hashtags.forEach(item => {
+                const fontSize = item.popularity_index / 80 + 1;
+                flexContainer.innerHTML += `
+                    <span class='text-orange-400 font-semibold' style="font-size: ${fontSize}rem">
+                        ${item.hashtag}
+                    </span>
+                `;
+            });
+
+            section.appendChild(flexContainer);
+            return section;
+        }
+
+        const contentDiv = document.getElementById("content");
+        contentDiv.appendChild(createTrendingTopicsSection());
+        contentDiv.appendChild(createSearchKeywordsSection());
+        contentDiv.appendChild(createHashtagsSection());
+
+        // CHART.JS Implementation
+        const chartCanvas = document.getElementById("popularityChart").getContext("2d");
+        let chartInstance = null;
+
+        function generateChart(type) {
+            if (chartInstance) {
+                chartInstance.destroy();
+            }
+
+            const topics = jsonData.trending_topics.map(item => item.topic);
+            const popularity = jsonData.trending_topics.map(item => item.popularity_index);
+
+            let chartConfig = {
+                type: type,
+                data: {
+                    labels: topics,
+                    datasets: [{
+                        label: "Popularity Index",
+                        data: popularity,
+                        backgroundColor: type === 'pie' ? 
+                            ["#ff6384", "#36a2eb", "#ffce56", "#4bc0c0", "#9966ff", "#ff9f40", "#ff6384", "#36a2eb"] : 
+                            "rgba(54, 162, 235, 0.6)",
+                        borderColor: "rgba(54, 162, 235, 1)",
+                        borderWidth: 1,
+                        fill: type === "line",
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: type !== 'pie' ? {
+                        y: {
+                            beginAtZero: true
+                        }
+                    } : {}
+                }
+            };
+
+            if (type === "bubble") {
+                chartConfig = {
+                    type: "bubble",
+                    data: {
+                        datasets: [{
+                            label: "Trending Topics Popularity",
+                            data: jsonData.trending_topics.map(item => ({
+                                x: Math.random() * 10, // Random X for positioning
+                                y: item.popularity_index, // Y represents popularity
+                                r: item.popularity_index / 10 // Radius of bubble
+                            })),
+                            backgroundColor: "rgba(255, 99, 132, 0.6)",
+                            borderColor: "rgba(255, 99, 132, 1)",
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            x: {
+                                type: "linear",
+                                position: "bottom"
+                            }
+                        }
+                    }
+                };
+            }
+
+            chartInstance = new Chart(chartCanvas, chartConfig);
+        }
+
+        // Initial chart load (default: Line Chart)
+        generateChart("line");
+
+        // Dropdown event listener
+        document.getElementById("chartType").addEventListener("change", function() {
+            const selectedType = this.value;
+            generateChart(selectedType);
+        });
+
+    </script>
+
+
+</main>
+
+<%- include('snippets/footer') %>

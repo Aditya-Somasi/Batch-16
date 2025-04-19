@@ -1,0 +1,191 @@
+<%- include('snippets/header') %>
+<main class=" justify-center min-h-screen p-6">
+
+<div class="max-w-screen-xl mx-auto space-y-8">
+  <h1 class="text-3xl font-bold mb-4 text-center text-cyan-400">Topic Popularity Heatmap</h1>
+
+  <canvas id="heatmap" class="w-full"></canvas>
+
+  <h1 class="text-3xl font-bold mt-8 mb-3 text-center text-cyan-400">Key Topic Breakdown  </h1>
+  <canvas id="pieChart" class="w-full"></canvas>
+
+  <div class="hidden">
+    <h1 class="text-3xl font-bold mb-4 text-center text-cyan-400 hidden">Topic Popularity Fluctuation  </h1>
+    <canvas id="lineChart" class="w-full hidden"></canvas>
+  </div>
+  
+
+
+</div>
+
+<script>
+
+  function createHeatmap(jsonData, ctx) {
+    const topics = jsonData.trending_topics;
+    const data = [];
+    const labels = [];
+
+    for (let i = 0; i < topics.length; i++) {
+      labels.push(topics[i]);
+      data.push(Math.floor(Math.random() * 100));
+    }
+
+    const dataset = {
+      label: 'Topic Popularity',
+      data: data,
+      backgroundColor: function(context) {
+        const value = context.dataset.data[context.dataIndex];
+        const alpha = value / 100;
+        return `rgba(59, 130, 246, ${alpha})`;
+      },
+      borderColor: 'rgba(255, 255, 255, 0.2)',
+      borderWidth: 1,
+      borderRadius: 5,
+    };
+
+    new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [dataset]
+      },
+      options: {
+        indexAxis: 'y',
+        plugins: {
+          legend: { display: false },
+          tooltip: { enabled: true }
+        },
+        scales: {
+          x: {
+            beginAtZero: true,
+            max: 100,
+            ticks: { color: 'rgba(255, 255, 255, 0.7)' },
+            grid: { color: 'rgba(255, 255, 255, 0.1)' }
+          },
+          y: {
+            ticks: { color: 'rgba(255, 255, 255, 0.7)' }
+          }
+        }
+      }
+    });
+  }
+
+  function createPieChart(jsonData, ctx) {
+    const topics = jsonData.trending_topics.slice(0, 30);
+    const data = topics.map(() => Math.floor(Math.random() * 100));
+    const labels = topics;
+
+    new Chart(ctx, {
+      type: 'pie',
+      data: {
+        labels: labels,
+        datasets: [{
+          data: data,
+          backgroundColor: [
+            '#64B5F6', '#1976D2', '#0288D1', '#0097A7', '#00ACC1' // ... more colors if needed
+          ],
+          borderColor: 'rgba(255, 255, 255, 0.2)',
+          hoverOffset: 4
+        }]
+      },
+      options: {
+        plugins: { legend: { display: true, position: 'right', labels: { color: 'white' } } }
+      }
+    });
+  }
+
+  function createLineChart(jsonData, ctx) {
+    const topics = jsonData.trending_topics.slice(0, 10); // Top 10 topics
+    const days = 30; // Number of days for the chart
+    const labels = Array.from({ length: days }, (_, i) => `Day ${i + 1}`);
+
+    // Array of colors to cycle through (add more if needed)
+    const colors = [
+        '#64B5F6', '#1976D2', '#0288D1', '#0097A7', '#00ACC1',
+        '#26A69A', '#4CAF50', '#66BB6A', '#81C784', '#9CCC65', 
+        // ...more colors
+    ];
+
+
+    const datasets = topics.map((topic, index) => {
+        let currentValue = Math.floor(Math.random() * 50) + 20; // Start between 20-70
+        const data = [];
+
+        for (let i = 0; i < days; i++) {
+            const change = Math.random() * 10 - 5; // Change by -5 to +5
+            currentValue += change;
+            currentValue = Math.max(0, Math.min(100, currentValue)); // Keep within 0-100
+            data.push(currentValue);
+        }
+
+        const color = colors[index % colors.length];
+
+        return {
+            label: topic,
+            data: data,
+            borderColor: color,
+            backgroundColor: `rgba(${color.slice(1)}, 0.2)`, // Slightly transparent fill
+            tension: 0.4,
+            fill: true,
+            pointRadius: 0, // Hide data points for a cleaner look
+            borderWidth: 2     // Make lines thicker
+
+        };
+
+    });
+
+    
+
+    new Chart(ctx, {
+        type: 'line',
+        data: { labels, datasets },
+
+        options: {
+            plugins: {
+                legend: { 
+                    display: true, 
+                    position: 'top', 
+                    labels: { color: 'white' } 
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 120,       // Add some top margin
+                    ticks: { color: 'white' },
+                    grid: { 
+                        color: 'rgba(255, 255, 255, 0.1)',
+                        drawBorder: false  // Hide the top border
+                    }
+
+                },
+                x: {
+                    ticks: { color: 'white' },
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.1)',
+                        display: false  // Optionally hide x-grid lines
+                    }
+                }
+            }
+        }
+    });
+  }
+
+  fetch('json/topics.json')
+    .then(response => response.json())
+    .then(jsonData => {
+      createHeatmap(jsonData, document.getElementById('heatmap').getContext('2d'));
+      createPieChart(jsonData, document.getElementById('pieChart').getContext('2d'));
+      createLineChart(jsonData, document.getElementById('lineChart').getContext('2d'));
+    })
+    .catch(error => {
+      console.error("Error loading JSON data:", error);
+      const errorDiv = document.createElement('div');
+      errorDiv.classList.add('text-red-500', 'text-center');
+      errorDiv.textContent = "Error loading content. Please try again later.";
+      document.querySelector('.max-w-5xl').appendChild(errorDiv); 
+    });
+</script>
+
+</main>
+<%- include('snippets/footer') %>
