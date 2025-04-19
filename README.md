@@ -39,7 +39,7 @@ const db = mysql
   .createPool({
     host: 'localhost',
     user: 'root',
-    password: 'Aditya@123',
+    password: 'user@123',
     database: 'project',
   })
   .promise();
